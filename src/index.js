@@ -8,17 +8,26 @@ var config = {
         preload: preload,
         create: create,
         update: update
-    }
+    },
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 300 },
+            debug: true
+        }
+    },
 };
 var game = new Phaser.Game(config);
 function preload() {
-    this.load.spritesheet('mario', 'src/assets/mario.png', { frameWidth: 28, frameHeight: 32});
-    this.load.spritesheet('browser', 'src/assets/browser.png', { frameWidth: 34, frameHeight: 32});
-    this.load.spritesheet('goomba', 'src/assets/goomba.png', { frameWidth: 28, frameHeight: 32});
-    this.load.spritesheet('paratroopa', 'src/assets/paratroopa.png', { frameWidth: 30, frameHeight: 32});
-    this.load.spritesheet('mario_star', 'src/assets/mario_star.png', { frameWidth: 45, frameHeight: 45});
-    this.load.spritesheet('star', 'src/assets/star.png', { frameWidth: 28, frameHeight: 32});
-    this.load.spritesheet('uniqueKey', 'src/assets/metalslug_mummy37x45.png', { frameWidth: 37, frameHeight: 45, startFrame: 0, endFrame: 18 });
+    this.load.spritesheet('mario', 'src/assets/mario.png', { frameWidth: 28, frameHeight: 32 });
+    this.load.spritesheet('browser', 'src/assets/browser.png', { frameWidth: 34, frameHeight: 32 });
+    this.load.spritesheet('goomba', 'src/assets/goomba.png', { frameWidth: 28, frameHeight: 32 });
+    this.load.spritesheet('paratroopa', 'src/assets/paratroopa.png', { frameWidth: 30, frameHeight: 32 });
+    this.load.spritesheet('mario_star', 'src/assets/mario_star.png', { frameWidth: 45, frameHeight: 45 });
+    this.load.spritesheet('star', 'src/assets/star.png', { frameWidth: 28, frameHeight: 32 });
+    this.load.image('sky', 'src/assets/clouds.png');
+    this.load.image('ground', 'src/assets/ground.png');
+
 }
 
 var mario;
@@ -29,83 +38,102 @@ var goomba;
 var paratroopa;
 var fire;
 var mario_star;
+var ground;
+var sky;
+var gameSpeed = 3;
 
 function create() {
+    sky = this.add.tileSprite(0, 400, 2000, 800, 'sky');
+    ground = this.add.tileSprite(0, 400, 2400, 50, 'ground')
+    this.physics.add.existing(ground, true);
+
     this.anims.create({
         key: 'walk',
-        frames: this.anims.generateFrameNumbers('mario', { frames: [ 0, 1, 2, 3, 4 ] }),
+        frames: this.anims.generateFrameNumbers('mario', { frames: [0, 1, 2, 3, 4] }),
         frameRate: 8,
         repeat: -1
     });
     this.anims.create({
         key: 'jump',
-        frames: this.anims.generateFrameNumbers('mario', { frames: [ 6 ] }),
-        frameRate: 10,
+        frames: this.anims.generateFrameNumbers('mario', { frames: [6] }),
+        frameRate: 1,
         repeat: -1
     });
     this.anims.create({
         key: 'down',
-        frames: this.anims.generateFrameNumbers('mario', { frames: [ 7, 8, 9, 10, 11 ] }),
+        frames: this.anims.generateFrameNumbers('mario', { frames: [7, 8, 9, 10, 11] }),
         frameRate: 10,
         repeat: -1
     });
     this.anims.create({
         key: 'browser_run',
-        frames: this.anims.generateFrameNumbers('browser', { frames: [ 0, 1, 2, 3, 4, 5 ] }),
+        frames: this.anims.generateFrameNumbers('browser', { frames: [0, 1, 2, 3, 4, 5] }),
         frameRate: 10,
         repeat: -1
     });
     this.anims.create({
         key: 'browser_fire',
-        frames: this.anims.generateFrameNumbers('browser', { frames: [ 6, 7, 8 ] }),
+        frames: this.anims.generateFrameNumbers('browser', { frames: [6, 7, 8] }),
         frameRate: 10,
         repeat: -1
     });
     this.anims.create({
         key: 'fire',
-        frames: this.anims.generateFrameNumbers('browser', { frames: [ 11, 10, 9 ] }),
+        frames: this.anims.generateFrameNumbers('browser', { frames: [11, 10, 9] }),
         frameRate: 2,
         repeat: -1
     });
     this.anims.create({
         key: 'goomba_run',
-        frames: this.anims.generateFrameNumbers('goomba', { frames: [ 0, 1, 2, 3 ] }),
+        frames: this.anims.generateFrameNumbers('goomba', { frames: [0, 1, 2, 3] }),
         frameRate: 7,
         repeat: -1
     });
     this.anims.create({
         key: 'star_round',
-        frames: this.anims.generateFrameNumbers('star', { frames: [ 0, 1, 2, 3, 4, 5, 6, 7, 8 ] }),
+        frames: this.anims.generateFrameNumbers('star', { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8] }),
         frameRate: 7,
         repeat: -1
     });
-    
+
     this.anims.create({
         key: 'paratroopa_fly',
-        frames: this.anims.generateFrameNumbers('paratroopa', { frames: [ 0, 1, 2, 3 ] }),
+        frames: this.anims.generateFrameNumbers('paratroopa', { frames: [0, 1, 2, 3] }),
         frameRate: 7,
         repeat: -1
     });
     this.anims.create({
         key: 'mario_star',
-        frames: this.anims.generateFrameNumbers('mario_star', { frames: [ 0, 1, 2, 3, 4, 5, 6, 7, 8 ] }),
+        frames: this.anims.generateFrameNumbers('mario_star', { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8] }),
         frameRate: 7,
         repeat: -1
     });
-    const keys = [ 'walk', 'jump', 'down' ];
-    mario = this.add.sprite(130, 300);
+
+    mario = this.physics.add.sprite(30, 100)
+        .setCollideWorldBounds(true)
+        .setGravityY(5000)
     mario.setScale(1);
     mario.play('walk');
-    let c = 0;
-        this.input.on('pointerdown', function () {
-            c++;
-            if (c === keys.length)
-            {
-                c = 0;
-            }
-            mario.play(keys[c]);
-            current.setText('Playing: ' + keys[c]);
-        });
+    this.physics.add.collider(mario, ground);
+
+
+    this.input.keyboard.on('keydown-SPACE', () => {
+        if (mario.body.onFloor()) {
+            mario.setVelocityY(-1000);
+        }
+    });
+    this.input.keyboard.on('keydown-UP', () => {
+        if (mario.body.onFloor()) {
+            mario.setVelocityY(-1000);
+        }
+    });
+
+    this.input.keyboard.on('keydown-DOWN', () => {
+        if (mario.body.onFloor()) {
+            //
+        }
+    });
+
     star = this.add.sprite(100, 300);
     star.setScale(1);
     star.play('star_round');
@@ -129,4 +157,12 @@ function create() {
     mario_star.play('mario_star');
 }
 
-function update() { }
+function update() {
+    ground.tilePositionX += gameSpeed;
+    sky.tilePositionX += gameSpeed;
+    if (mario.body.onFloor()) {
+        mario.play('walk', true);
+    } else {
+        mario.play('jump');
+    }
+}
