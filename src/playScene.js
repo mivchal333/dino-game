@@ -94,7 +94,7 @@ class PlayScene extends Phaser.Scene {
         this.mario = this.physics.add.sprite(30, 100)
             .setCollideWorldBounds(true)
             .setGravityY(5000)
-        this.mario.setScale(1);
+        this.mario.setScale(1.5);
         this.mario.play('walk');
         this.physics.add.collider(this.mario, this.ground);
         // game.physics.enable(mario, Phaser.Physics.ARCADE)
@@ -108,7 +108,7 @@ class PlayScene extends Phaser.Scene {
         });
         this.input.keyboard.on('keydown-UP', () => {
             if (this.mario.body.onFloor()) {
-                this.mario.setVelocityY(-1000);
+                this.mario.setVelocityY(-1300);
                 this.jumpSound.play();
             }
         });
@@ -134,25 +134,25 @@ class PlayScene extends Phaser.Scene {
         this.physics.add.collider(this.obsticles, this.ground);
 
         this.star = this.add.sprite(100, 300);
-        this.star.setScale(1);
+        this.star.setScale(1.5);
         this.star.play('star_round');
         this.browser = this.add.sprite(160, 300);
-        this.browser.setScale(1);
+        this.browser.setScale(1.5);
         this.browser.play('browser_run');
         this.browser = this.add.sprite(200, 300);
-        this.browser.setScale(1);
+        this.browser.setScale(1.5);
         this.browser.play('browser_fire');
         this.goomba = this.add.sprite(240, 300);
-        this.goomba.setScale(1);
+        this.goomba.setScale(1.5);
         this.goomba.play('goomba_run');
         this.paratroopa = this.add.sprite(280, 300);
-        this.paratroopa.setScale(1);
+        this.paratroopa.setScale(1.5);
         this.paratroopa.play('paratroopa_fly');
         this.fire = this.add.sprite(310, 300);
-        this.fire.setScale(1);
+        this.fire.setScale(1.5);
         this.fire.play('fire');
         this.marioStar = this.add.sprite(350, 300);
-        this.marioStar.setScale(1);
+        this.marioStar.setScale(1.5);
         this.marioStar.play('mario_star');
 
         this.physics.add.collider(this.stars, this.ground);
@@ -188,7 +188,7 @@ class PlayScene extends Phaser.Scene {
         if (!this.running) {
             return;
         }
-
+        this.gameSpeed += 0.003
         this.spawnTime += delta * this.gameSpeed * 0.05;
         if (this.spawnTime > 500) {
             this.spawnTime = 0;
@@ -199,22 +199,30 @@ class PlayScene extends Phaser.Scene {
             switch (number) {
                 case 1:
                     obsticle = this.obsticles.create(1000, 350, 'browser_run', 0, true, true)
+                        .setScale(1.5)
                         .setGravityY(300)
+
                     obsticle.play('browser_run');
                     break;
                 case 2:
                     obsticle = this.obsticles.create(1000, 350, 'browser_run', 0, true, true)
                         .setGravityY(300)
+                        .setScale(1.5)
+
                     obsticle.play('goomba_run');
                     break;
                 case 3:
                     obsticle = this.stars.create(1000, 350, 'star_round', 0, true, true)
                         .setGravityY(300)
+                        .setScale(1.5)
+
                     obsticle.play('star_round');
                     break;
                 case 4:
                     const height = random(300, 350);
                     obsticle = this.obsticles.create(1000, height, 'paratroopa', 0, true, true)
+                        .setScale(1.5)
+
                     obsticle.play('paratroopa_fly');
                     break;
             }
