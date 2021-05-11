@@ -61,7 +61,7 @@ class PlayScene extends Phaser.Scene {
         this.anims.create({
             key: 'fire',
             frames: this.anims.generateFrameNumbers('browser', {frames: [11, 10, 9]}),
-            frameRate: 2,
+            frameRate: 7,
             repeat: -1
         });
         this.anims.create({
@@ -133,28 +133,6 @@ class PlayScene extends Phaser.Scene {
         this.obsticles = this.physics.add.group();
         this.physics.add.collider(this.obsticles, this.ground);
 
-        this.star = this.add.sprite(100, 300);
-        this.star.setScale(1.5);
-        this.star.play('star_round');
-        this.browser = this.add.sprite(160, 300);
-        this.browser.setScale(1.5);
-        this.browser.play('browser_run');
-        this.browser = this.add.sprite(200, 300);
-        this.browser.setScale(1.5);
-        this.browser.play('browser_fire');
-        this.goomba = this.add.sprite(240, 300);
-        this.goomba.setScale(1.5);
-        this.goomba.play('goomba_run');
-        this.paratroopa = this.add.sprite(280, 300);
-        this.paratroopa.setScale(1.5);
-        this.paratroopa.play('paratroopa_fly');
-        this.fire = this.add.sprite(310, 300);
-        this.fire.setScale(1.5);
-        this.fire.play('fire');
-        this.marioStar = this.add.sprite(350, 300);
-        this.marioStar.setScale(1.5);
-        this.marioStar.play('mario_star');
-
         this.physics.add.collider(this.stars, this.ground);
         this.physics.add.overlap(this.mario, this.stars, this.collectStar, null, this);
         this.physics.add.overlap(this.mario, this.obsticles, this.enemyCollision, null, this);
@@ -195,38 +173,25 @@ class PlayScene extends Phaser.Scene {
 
             let number = random(1, 4)
             Phaser.Math.Between(600, 900);
-            let obsticle;
             switch (number) {
                 case 1:
-                    obsticle = this.obsticles.create(1000, 350, 'browser_run', 0, true, true)
-                        .setScale(1.5)
-                        .setGravityY(300)
-
-                    obsticle.play('browser_run');
+                    this.runObstacle('browser_run', 'browser_run')
                     break;
                 case 2:
-                    obsticle = this.obsticles.create(1000, 350, 'browser_run', 0, true, true)
-                        .setGravityY(300)
-                        .setScale(1.5)
-
-                    obsticle.play('goomba_run');
+                    this.runObstacle('browser_run', 'goomba_run')
                     break;
                 case 3:
-                    obsticle = this.stars.create(1000, 350, 'star_round', 0, true, true)
-                        .setGravityY(300)
-                        .setScale(1.5)
-
-                    obsticle.play('star_round');
+                    this.runObstacle('star_round', 'star_round')
                     break;
                 case 4:
-                    const height = random(300, 350);
-                    obsticle = this.obsticles.create(1000, height, 'paratroopa', 0, true, true)
-                        .setScale(1.5)
+                    const height = random(200, 350);
+                    let ranObstacle = this.runObstacle('paratroopa', 'paratroopa_fly', 1000, height, 0, -70);
 
-                    obsticle.play('paratroopa_fly');
+                    setTimeout(() => {
+                        this.runObstacle('fire', 'fire', ranObstacle.x - 50, height, 0, -90)
+                    }, 200)
                     break;
             }
-            obsticle.setVelocityX(this.gameSpeed * -100);
         }
         this.ground.tilePositionX += this.gameSpeed;
         this.sky.tilePositionX += this.gameSpeed;
@@ -235,6 +200,15 @@ class PlayScene extends Phaser.Scene {
         } else {
             this.mario.play('jump');
         }
+    }
+
+    runObstacle(obstacleKey, playKey, x = 1000, y = 350, gravity = 300, deltaVelocity = -100) {
+        let obstacle = this.obsticles.create(x, y, obstacleKey, 0, true, true)
+            .setScale(1.5)
+            .setGravityY(gravity)
+        obstacle.play(playKey);
+        obstacle.setVelocityX(this.gameSpeed * deltaVelocity);
+        return obstacle;
     }
 }
 
