@@ -19,6 +19,13 @@ class PlayScene extends Phaser.Scene {
         this.collisionSound = this.sound.add('collision', {volume: 1});
         this.powerUpSound = this.sound.add('powerup', {volume: 1});
         this.dieSound = this.sound.add('die', {volume: 1});
+        this.gameOverScreen = this.add.container(innerWidth / 2, innerHeight / 2 - 300).setAlpha(0)
+        this.gameOverText = this.add.image(0, 0, 'game-over');
+        this.restart = this.add.image(0, 80, 'restart').setInteractive();
+        this.gameOverScreen.add([
+            this.gameOverText, this.restart
+        ])
+
         this.ground.immovable = true;
         this.anims.create({
             key: 'walk',
@@ -110,6 +117,17 @@ class PlayScene extends Phaser.Scene {
                 //
             }
         });
+
+        this.restart.on('pointerdown', () => {
+            this.mario.setVelocityY(0);
+            this.physics.resume();
+            this.obsticles.clear(true, true);
+            this.running = true;
+            this.gameOverScreen.setAlpha(0);
+            this.anims.resumeAll();
+            this.lives = 3;
+            this.livesText.setText('Lives: ' + this.lives);
+        })
         this.stars = this.physics.add.group();
         this.obsticles = this.physics.add.group();
         this.physics.add.collider(this.obsticles, this.ground);
@@ -151,6 +169,8 @@ class PlayScene extends Phaser.Scene {
         } else {
             this.running = false;
             this.dieSound.play();
+            this.gameOverScreen.setAlpha(1)
+            this.mario.anims.stop();
         }
     }
 
@@ -163,9 +183,11 @@ class PlayScene extends Phaser.Scene {
     }
 
     update(time, delta) {
+
         if (!this.running) {
             return;
         }
+
         this.spawnTime += delta * this.gameSpeed * 0.05;
         if (this.spawnTime > 500) {
             this.spawnTime = 0;

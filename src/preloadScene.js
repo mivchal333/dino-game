@@ -14,6 +14,10 @@ class PreloadScene extends Phaser.Scene {
         this.load.spritesheet('star', 'src/assets/star.png', {frameWidth: 28, frameHeight: 32});
         this.load.image('sky', 'src/assets/clouds.png');
         this.load.image('ground', 'src/assets/ground.png');
+        // TODO: use game over image
+        this.load.image('game-over', 'src/assets/game-over.png');
+        // TODO: use restart image
+        this.load.image('restart', 'src/assets/restart.png');
         this.load.audio('jump', 'src/assets/audio/jump.mp3');
         this.load.audio('star', 'src/assets/audio/coin.mp3');
         this.load.audio('collision', 'src/assets/audio/kick.mp3');
