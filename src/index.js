@@ -27,7 +27,11 @@ function preload() {
     this.load.spritesheet('star', 'src/assets/star.png', { frameWidth: 28, frameHeight: 32 });
     this.load.image('sky', 'src/assets/clouds.png');
     this.load.image('ground', 'src/assets/ground.png');
-
+    this.load.audio('jump', 'src/assets/audio/jump.mp3');
+    this.load.audio('star', 'src/assets/audio/coin.mp3');
+    this.load.audio('collision', 'src/assets/audio/kick.mp3');
+    this.load.audio('powerup', 'src/assets/audio/powerup.mp3');
+    this.load.audio('die', 'src/assets/audio/die.mp3');
 }
 
 var mario;
@@ -37,16 +41,34 @@ var browser2;
 var goomba;
 var paratroopa;
 var fire;
-var mario_star;
+var marioStar;
 var ground;
 var sky;
 var gameSpeed = 3;
+var running = true;
+var spawnTime = 0;
+var spawnPeriod;
+var obsticles;
+var jumpSound;
+var stars;
+var starSound;
+var lives = 3;
+var livesText;
+var collisionSound;
+var powerUpSound;
+var dieSound;
 
 function create() {
     sky = this.add.tileSprite(0, 400, 2000, 800, 'sky');
     ground = this.add.tileSprite(0, 400, 2400, 50, 'ground')
     this.physics.add.existing(ground, true);
-
+    livesText = this.add.text(16, 16, 'Lives: 3', { fontSize: '32px', fill: '#fff' });
+    jumpSound = this.sound.add('jump', {volume: 1});
+    starSound = this.sound.add('star', {volume: 1})
+    collisionSound = this.sound.add('collision', {volume: 1});
+    powerUpSound = this.sound.add('powerup', {volume: 1});
+    dieSound = this.sound.add('die', {volume: 1});
+    ground.immovable = true;
     this.anims.create({
         key: 'walk',
         frames: this.anims.generateFrameNumbers('mario', { frames: [0, 1, 2, 3, 4] }),
@@ -115,16 +137,19 @@ function create() {
     mario.setScale(1);
     mario.play('walk');
     this.physics.add.collider(mario, ground);
+    // game.physics.enable(mario, Phaser.Physics.ARCADE)
 
 
     this.input.keyboard.on('keydown-SPACE', () => {
         if (mario.body.onFloor()) {
-            mario.setVelocityY(-1000);
+            mario.setVelocityY(-1300);
+            jumpSound.play();
         }
     });
     this.input.keyboard.on('keydown-UP', () => {
         if (mario.body.onFloor()) {
             mario.setVelocityY(-1000);
+            jumpSound.play();
         }
     });
 
@@ -133,6 +158,9 @@ function create() {
             //
         }
     });
+    stars = this.physics.add.group();
+    obsticles = this.physics.add.group();
+    this.physics.add.collider(obsticles, ground);
 
     star = this.add.sprite(100, 300);
     star.setScale(1);
@@ -152,12 +180,65 @@ function create() {
     fire = this.add.sprite(310, 300);
     fire.setScale(1);
     fire.play('fire');
-    mario_star = this.add.sprite(350, 300);
-    mario_star.setScale(1);
-    mario_star.play('mario_star');
+    marioStar = this.add.sprite(350, 300);
+    marioStar.setScale(1);
+    marioStar.play('mario_star');
+
+    this.physics.add.collider(stars, ground);
+    this.physics.add.overlap(mario, stars, collectStar, null, this);
+    this.physics.add.overlap(mario, obsticles, enemyCollision, null, this);
 }
 
-function update() {
+function enemyCollision(mario, enemy){
+    enemy.destroy();
+    if(lives > 1){
+        lives--;
+        collisionSound.play();
+        livesText.setText('Lives: ' + lives);
+    }else{
+        running = false;
+        dieSound.play();
+    }
+}
+  
+function collectStar (mario, star)
+{
+    console.log("catch");
+    lives++;
+    star.destroy();
+    starSound.play();
+    livesText.setText('Lives: ' + lives);
+}
+
+function update(time, delta) {
+    if(!running){
+        return;
+    }
+    spawnTime += delta * gameSpeed * 0.05;
+    if(spawnTime > 500){
+        spawnTime = 0;
+        
+        let number = Math.floor(Math.random()* 3) + 1;
+        let distance = Phaser.Math.Between(600, 900);
+        let obsticle;
+        console.log(number);
+        switch (number){
+            case 1:
+                obsticle = obsticles.create(1000, 350, 'browser_run', 0, true, true)
+                obsticle.play('browser_run');
+                break;
+            case 2:
+                obsticle = obsticles.create(1000, 350, 'browser_run', 0, true, true)
+                obsticle.play('goomba_run');
+                break;
+            case 3:
+                obsticle = stars.create(1000, 350, 'star_round', 0, true, true)
+                obsticle.play('star_round');
+                break;
+        }
+        obsticle.setVelocityX(gameSpeed * -100);
+        
+    }
     ground.tilePositionX += gameSpeed;
     sky.tilePositionX += gameSpeed;
     if (mario.body.onFloor()) {
