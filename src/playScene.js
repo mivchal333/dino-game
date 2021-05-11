@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import {random} from 'lodash'
 
 class PlayScene extends Phaser.Scene {
     constructor() {
@@ -192,25 +193,32 @@ class PlayScene extends Phaser.Scene {
         if (this.spawnTime > 500) {
             this.spawnTime = 0;
 
-            let number = Math.floor(Math.random() * 3) + 1;
+            let number = random(1, 4)
             Phaser.Math.Between(600, 900);
             let obsticle;
             switch (number) {
                 case 1:
                     obsticle = this.obsticles.create(1000, 350, 'browser_run', 0, true, true)
+                        .setGravityY(300)
                     obsticle.play('browser_run');
                     break;
                 case 2:
                     obsticle = this.obsticles.create(1000, 350, 'browser_run', 0, true, true)
+                        .setGravityY(300)
                     obsticle.play('goomba_run');
                     break;
                 case 3:
                     obsticle = this.stars.create(1000, 350, 'star_round', 0, true, true)
+                        .setGravityY(300)
                     obsticle.play('star_round');
+                    break;
+                case 4:
+                    const height = random(300, 350);
+                    obsticle = this.obsticles.create(1000, height, 'paratroopa', 0, true, true)
+                    obsticle.play('paratroopa_fly');
                     break;
             }
             obsticle.setVelocityX(this.gameSpeed * -100);
-
         }
         this.ground.tilePositionX += this.gameSpeed;
         this.sky.tilePositionX += this.gameSpeed;
