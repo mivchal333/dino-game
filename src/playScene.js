@@ -22,7 +22,7 @@ class PlayScene extends Phaser.Scene {
         this.collisionSound = this.sound.add('collision', {volume: 1});
         this.powerUpSound = this.sound.add('powerup', {volume: 1});
         this.dieSound = this.sound.add('die', {volume: 1});
-        this.gameOverScreen = this.add.container(innerWidth / 2, innerHeight / 2 - 300).setAlpha(0)
+        this.gameOverScreen = this.add.container(500, innerHeight / 2 - 300).setAlpha(0)
         this.gameOverText = this.add.image(0, 0, 'game-over');
         this.restart = this.add.image(0, 80, 'restart').setInteractive();
         this.gameOverScreen.add([

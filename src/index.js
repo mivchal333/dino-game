@@ -10,9 +10,6 @@ const config = {
     scene: [PreloadScene, PlayScene],
     physics: {
         default: 'arcade',
-        arcade: {
-            debug: true
-        }
     },
 };
 new Phaser.Game(config);
