@@ -8,13 +8,15 @@ class PlayScene extends Phaser.Scene {
         this.running = true;
         this.spawnTime = 0;
         this.lives = 3;
+        this.points = 0;
     }
 
     create() {
         this.sky = this.add.tileSprite(0, 400, 2000, 800, 'sky');
         this.ground = this.add.tileSprite(0, 400, 2400, 50, 'ground')
         this.physics.add.existing(this.ground, true);
-        this.livesText = this.add.text(16, 16, 'Lives: 3', {fontSize: '32px', fill: '#fff'});
+        this.livesText = this.add.text(16, 40, 'Lives: 3', {fontSize: '32px', fill: '#fff'});
+        this.pointsText = this.add.text(16, 16, 'Points: 0', {fontSize: '32px', fill: '#fff'});
         this.jumpSound = this.sound.add('jump', {volume: 1});
         this.starSound = this.sound.add('star', {volume: 1})
         this.collisionSound = this.sound.add('collision', {volume: 1});
@@ -74,7 +76,7 @@ class PlayScene extends Phaser.Scene {
             key: 'star_round',
             frames: this.anims.generateFrameNumbers('star', {frames: [0, 1, 2, 3, 4, 5, 6, 7, 8]}),
             frameRate: 7,
-            repeat: -1
+            repeat: 5
         });
 
         this.anims.create({
@@ -97,17 +99,21 @@ class PlayScene extends Phaser.Scene {
         this.mario.setScale(1.5);
         this.mario.play('walk');
         this.physics.add.collider(this.mario, this.ground);
-        // game.physics.enable(mario, Phaser.Physics.ARCADE)
 
 
         this.input.keyboard.on('keydown-SPACE', () => this.jumpCallback());
         this.input.keyboard.on('keydown-UP', () => this.jumpCallback());
         this.input.keyboard.on('keydown-DOWN', () => {
-            console.error('squat!')
+            if(this.mario.body.height > 30){
+                this.mario.body.height = 24;
+                this.mario.body.offset.y = 12;
+            }
         })
 
         this.input.keyboard.on('keyup-DOWN', () => {
-            console.error('stand!')
+            this.mario.body.height = 48;
+            this.mario.body.offset.y = 0;
+            this.mario.setPosition(30, 328,)
         })
 
 
@@ -119,7 +125,7 @@ class PlayScene extends Phaser.Scene {
         this.physics.add.collider(this.stars, this.ground);
         this.physics.add.overlap(this.mario, this.stars, this.collectStar, null, this);
         this.physics.add.overlap(this.mario, this.obsticles, this.enemyCollision, null, this);
-
+        this.input.on('gameobjectdown', this.fireBlowClick)
     }
 
     enemyCollision(mario, enemy) {
@@ -129,6 +135,7 @@ class PlayScene extends Phaser.Scene {
         if (this.lives > 0) {
             this.collisionSound.play();
         } else {
+            this.mario.setTexture('marioDie')
             this.running = false;
             this.dieSound.play();
             this.gameOverScreen.setAlpha(1)
@@ -141,18 +148,31 @@ class PlayScene extends Phaser.Scene {
         star.destroy();
         this.starSound.play();
         this.livesText.setText('Lives: ' + this.lives);
+        this.points += 50;
+        this.pointsText.setText('Points: ' + this.points);
+        if(this.points % 100 === 0){
+            this.powerUpSound.play();
+        }
     }
 
     restartGameCallback() {
         this.mario.setVelocityY(0);
+        this.mario.setPosition(30, 100)
         this.physics.resume();
         this.obsticles.clear(true, true);
         this.running = true;
         this.gameOverScreen.setAlpha(0);
         this.anims.resumeAll();
         this.lives = 3;
+        this.gameSpeed = 3;
         this.livesText.setText('Lives: ' + this.lives);
+        this.points  = 0;
+        this.pointsText.setText('Points: ' + this.points);
     };
+
+    fireBlowClick(click, fireBlow){
+        fireBlow.destroy();
+    }
 
     jumpCallback() {
         if (!this.running) {
@@ -174,7 +194,6 @@ class PlayScene extends Phaser.Scene {
             this.spawnTime = 0;
 
             let number = random(1, 4)
-            Phaser.Math.Between(600, 900);
             switch (number) {
                 case 1:
                     this.runObstacle(this.obsticles, 'browser_run', 'browser_run')
@@ -188,9 +207,9 @@ class PlayScene extends Phaser.Scene {
                 case 4:
                     const height = random(200, 350);
                     let ranObstacle = this.runObstacle(this.obsticles, 'paratroopa', 'paratroopa_fly', 1000, height, 0, -70);
-
                     setTimeout(() => {
-                        this.runObstacle(this.obsticles, 'fire', 'fire', ranObstacle.x - 50, height, 0, -90)
+                        let fireBall = this.runObstacle(this.obsticles, 'fire', 'fire', ranObstacle.x - 50, height, 0, -90);
+                        fireBall.setInteractive();
                     }, 200)
                     break;
             }
@@ -198,13 +217,22 @@ class PlayScene extends Phaser.Scene {
 
         this.obsticles.getChildren().forEach(obstacle => {
             if (obstacle.getBounds().right < 0) {
-                this.obsticles.killAndHide(obstacle);
+                // this.obsticles.killAndHide(obstacle);
+                obstacle.destroy();
+                this.points += 25;
+                this.pointsText.setText('Points: ' + this.points);
+                if(this.points % 100 === 0){
+                    this.powerUpSound.play();
+                }
             }
         })
 
         this.ground.tilePositionX += this.gameSpeed;
         this.sky.tilePositionX += this.gameSpeed;
-        if (this.mario.body.onFloor()) {
+        if(this.mario.body.height < 30){
+            console.log("Tak")
+            this.mario.play('down');
+        }else if (this.mario.body.onFloor()) {
             this.mario.play('walk', true);
         } else {
             this.mario.play('jump');

@@ -14,6 +14,7 @@ class PreloadScene extends Phaser.Scene {
         this.load.spritesheet('star', 'src/assets/star.png', {frameWidth: 28, frameHeight: 32});
         this.load.image('sky', 'src/assets/clouds.png');
         this.load.image('ground', 'src/assets/ground.png');
+        this.load.image('marioDie', 'src/assets/die.png');
         // TODO: use game over image
         this.load.image('game-over', 'src/assets/game-over.png');
         // TODO: use restart image
