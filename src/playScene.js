@@ -135,11 +135,12 @@ class PlayScene extends Phaser.Scene {
         if (this.lives > 0) {
             this.collisionSound.play();
         } else {
+            this.mario.anims.stop();
+            this.mario.body.height = 28;
             this.mario.setTexture('marioDie')
             this.running = false;
             this.dieSound.play();
             this.gameOverScreen.setAlpha(1)
-            this.mario.anims.stop();
         }
     }
 
@@ -158,6 +159,7 @@ class PlayScene extends Phaser.Scene {
     restartGameCallback() {
         this.mario.setVelocityY(0);
         this.mario.setPosition(30, 100)
+        this.mario.body.height = 48;
         this.physics.resume();
         this.obsticles.clear(true, true);
         this.running = true;
@@ -217,7 +219,6 @@ class PlayScene extends Phaser.Scene {
 
         this.obsticles.getChildren().forEach(obstacle => {
             if (obstacle.getBounds().right < 0) {
-                // this.obsticles.killAndHide(obstacle);
                 obstacle.destroy();
                 this.points += 25;
                 this.pointsText.setText('Points: ' + this.points);
@@ -230,7 +231,6 @@ class PlayScene extends Phaser.Scene {
         this.ground.tilePositionX += this.gameSpeed;
         this.sky.tilePositionX += this.gameSpeed;
         if(this.mario.body.height < 30){
-            console.log("Tak")
             this.mario.play('down');
         }else if (this.mario.body.onFloor()) {
             this.mario.play('walk', true);
